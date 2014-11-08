@@ -2009,7 +2009,8 @@ int CmdOptions::ei_decode(ei::Serializer& ei, bool getCmd)
 
 int CmdOptions::init_cenv()
 {
-    if (m_env.empty()) {
+    // start with the minimal environment
+    /* if (m_env.empty()) {
         m_cenv = (const char**)environ;
         return 0;
     }
@@ -2032,5 +2033,6 @@ int CmdOptions::init_cenv()
         m_cenv[i] = it->second.c_str();
     m_cenv[i] = NULL;
 
+    */
     return 0;
 }
