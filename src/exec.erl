@@ -531,7 +531,7 @@ init([Options]) ->
     Users = proplists:get_value(limit_users, Options, default(limit_users)),
     Debug = proplists:get_value(verbose,     Options, default(verbose)),
     DefinedEnv = 
-        case {proplists:get_value(clear_env, Options, default(true)), proplists:get_value(env, Options)} of
+        case {proplists:get_value(clear_env, Options, default(clear_env)), proplists:get_value(env, Options)} of
           {true, _ }     -> [{env, clear_env()}];
           {_, undefined} -> [];
           {_, Other}    -> [{env, Other}]
