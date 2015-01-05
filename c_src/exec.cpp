@@ -2009,8 +2009,7 @@ int CmdOptions::ei_decode(ei::Serializer& ei, bool getCmd)
 
 int CmdOptions::init_cenv()
 {
-    // start with the minimal environment
-    /* if (m_env.empty()) {
+    if (m_env.empty()) {
         m_cenv = (const char**)environ;
         return 0;
     }
@@ -2019,6 +2018,7 @@ int CmdOptions::init_cenv()
     for (char **env_ptr = environ; *env_ptr; env_ptr++) {
         std::string s(*env_ptr), key(s.substr(0, s.find_first_of('=')));
         MapEnvIterator it = m_env.find(key);
+        fprintf(stderr, "init_cenv copying caller key %s\n", key.c_str());
         if (it == m_env.end())
             m_env[key] = s;
     }
@@ -2029,10 +2029,11 @@ int CmdOptions::init_cenv()
     }
 
     int i = 0;
-    for (MapEnvIterator it = m_env.begin(), end = m_env.end(); it != end; ++it, ++i)
+    for (MapEnvIterator it = m_env.begin(), end = m_env.end(); it != end; ++it, ++i) {
         m_cenv[i] = it->second.c_str();
+        fprintf(stderr, "init_cenv copying mapenv key %d, %s\n", i, m_cenv[i]);
+    }
     m_cenv[i] = NULL;
 
-    */
     return 0;
 }

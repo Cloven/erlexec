@@ -489,6 +489,7 @@ default() ->
      {alarm, 12},
      {user, ""},        % Run port program as this user
      {limit_users, []}, % Restricted list of users allowed to run commands
+     {clear_env, true},
      {portexe, default(portexe)}].
 
 %% @private
@@ -529,13 +530,15 @@ init([Options]) ->
     Exe   = proplists:get_value(portexe,     Options, default(portexe)) ++ lists:flatten([" -n"|Args]),
     Users = proplists:get_value(limit_users, Options, default(limit_users)),
     Debug = proplists:get_value(verbose,     Options, default(verbose)),
-    Env   = case proplists:get_value(env, Options) of
-            undefined -> [];
-            Other     -> [{env, Other}]
+    DefinedEnv = 
+        case {proplists:get_value(clear_env, Options, default(true)), proplists:get_value(env, Options)} of
+          {true, _ }     -> [{env, clear_env()}];
+          {_, undefined} -> [];
+          {_, Other}    -> [{env, Other}]
             end,
     try
-        debug(Debug, "exec: port program: ~s\n env: ~p\n", [Exe, Env]),
-        PortOpts = Env ++ [binary, exit_status, {packet, 2}, nouse_stdio, hide],
+        debug(Debug, "exec: port program: ~s\n env: ~p\n", [Exe, DefinedEnv]),
+        PortOpts = DefinedEnv ++ [binary, exit_status, {packet, 2}, nouse_stdio, hide],
         Port = erlang:open_port({spawn, Exe}, PortOpts),
         Tab  = ets:new(exec_mon, [protected,named_table]),
         {ok, #state{port=Port, limit_users=Users, debug=Debug, registry=Tab}}
@@ -945,6 +948,17 @@ next_trans(_) ->
 
 print(Stream, OsPid, Data) ->
     io:format("Got ~w from ~w: ~p\n", [Stream, OsPid, Data]).
+
+-spec clear_env() -> [tuple()].
+clear_env() ->
+  ClearList = lists:map(
+    fun (X) ->
+        EqualPos = string:chr(X,$=) - 1,
+        EnvVar = string:substr(X,1,EqualPos),
+        { EnvVar, false }
+    end, 
+    os:getenv() ),
+  proplists:delete("SHELL", ClearList).
 
 %%%---------------------------------------------------------------------
 %%% Unit testing
